@@ -1,0 +1,7 @@
+{
+    "editor.fontSize": 13,
+    "workbench.colorTheme": "Visual Studio Dark - C++",
+    "editor.formatOnSave": true,
+    "git.ignoreLimitWarning": true,
+    "editor.fontVariations": false
+}
