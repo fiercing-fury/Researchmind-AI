@@ -1,20 +1,26 @@
 from fastapi import FastAPI
+from app.config.settings import settings
+from app.api.routes.health import router as health_router
+from app.utils.logger import logger
+
 
 app = FastAPI(
-    title="ResearchMind AI",
-    description="Production Grade AI Research Assistant",
-    version="1.0.0"
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    debug=settings.DEBUG
 )
 
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("ResearchMind AI Backend Started")
+
+
 @app.get("/")
-def home():
+def root():
     return {
-        "message": "ResearchMind AI Backend Running"
+        "message": "ResearchMind AI Running"
     }
 
 
-@app.get("/health")
-def health_check():
-    return {
-        "status": "healthy"
-    }
+app.include_router(health_router)
