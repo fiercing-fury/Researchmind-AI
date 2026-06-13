@@ -2,13 +2,15 @@ from fastapi import FastAPI
 from app.config.settings import settings
 from app.api.routes.health import router as health_router
 from app.utils.logger import logger
-
+from app.db.database import engine
+from app.db.base import Base
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     debug=settings.DEBUG
 )
+Base.metadata.create_all(bind=engine)
 
 
 @app.on_event("startup")
