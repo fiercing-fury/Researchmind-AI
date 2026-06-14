@@ -1,4 +1,6 @@
-from sqlalchemy import Column, String, DateTime
+from typing import Text
+
+from sqlalchemy import (Column, String, DateTime, Text)
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
@@ -40,6 +42,7 @@ class User(Base):
 class Document(Base):
     __tablename__ = "documents"
 
+    content = Column(Text)
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,

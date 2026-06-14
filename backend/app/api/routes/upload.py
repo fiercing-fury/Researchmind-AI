@@ -1,3 +1,4 @@
+from pypdf import PdfReader
 from fastapi import (
     APIRouter,
     UploadFile,
@@ -62,11 +63,36 @@ def upload_document(
             buffer
         )
 
+    extracted_text = ""
+
+    # PDF Extraction
+    if file.content_type == "application/pdf":
+
+        reader = PdfReader(file_path)
+
+        for page in reader.pages:
+            text = page.extract_text()
+
+            if text:
+                extracted_text += text + "\n"
+
+    # TXT Extraction
+    elif file.content_type == "text/plain":
+
+        with open(
+            file_path,
+            "r",
+            encoding="utf-8"
+        ) as txt_file:
+
+            extracted_text = txt_file.read()
+
     document = Document(
         user_id=current_user.id,
         file_name=file.filename,
         file_path=file_path,
-        file_type=file.content_type
+        file_type=file.content_type,
+        content=extracted_text
     )
 
     db.add(document)
@@ -74,5 +100,6 @@ def upload_document(
 
     return {
         "message": "File uploaded successfully",
-        "file_name": file.filename
+        "file_name": file.filename,
+        "preview": extracted_text[:500]
     }
