@@ -15,7 +15,10 @@ class User(Base):
         default=uuid.uuid4
     )
 
-    name = Column(String, nullable=False)
+    name = Column(
+        String,
+        nullable=False
+    )
 
     email = Column(
         String,
@@ -23,7 +26,7 @@ class User(Base):
         nullable=False
     )
 
-    password_hash = Column(
+    hashed_password = Column(
         String,
         nullable=False
     )
