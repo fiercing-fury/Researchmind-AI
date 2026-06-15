@@ -1,6 +1,7 @@
 venv/
 __pycache__/
 .env
+backend/.env
 uploads/
 *.pyc
 test_gemini.py
