@@ -7,8 +7,10 @@ from fastapi import (
     HTTPException
 )
 
+import json
 import shutil
 import os
+
 from sqlalchemy.orm import Session
 
 from app.db.database import SessionLocal
@@ -17,19 +19,28 @@ from app.core.dependencies import (
     get_current_user
 )
 
+from app.utils.chunker import (
+    chunk_text
+)
+
+from app.services.embedding_service import (
+    generate_embedding
+)
+
 router = APIRouter(
     prefix="/upload",
     tags=["Upload"]
 )
-
 
 UPLOAD_FOLDER = "uploads"
 
 
 def get_db():
     db = SessionLocal()
+
     try:
         yield db
+
     finally:
         db.close()
 
@@ -87,12 +98,34 @@ def upload_document(
 
             extracted_text = txt_file.read()
 
+    # Chunking
+    chunks = chunk_text(
+        extracted_text
+    )
+
+    # Generate Embeddings
+    combined_embeddings = []
+
+    for chunk in chunks:
+
+        embedding = generate_embedding(
+            chunk
+        )
+
+        combined_embeddings.append(
+            embedding
+        )
+
+    # Save Document
     document = Document(
         user_id=current_user.id,
         file_name=file.filename,
         file_path=file_path,
         file_type=file.content_type,
-        content=extracted_text
+        content=extracted_text,
+        embedding=json.dumps(
+            combined_embeddings
+        )
     )
 
     db.add(document)
