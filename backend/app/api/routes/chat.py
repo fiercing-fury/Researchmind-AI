@@ -6,6 +6,7 @@ from fastapi import (
 from app.services.llm_service import (
     generate_answer
 )
+from rapidfuzz import fuzz
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.db.models import (
@@ -92,9 +93,17 @@ def chat(
         content_chunks = chunk_text(doc.content)
 
         for i, emb in enumerate(embeddings):
-            similarity = cosine_similarity(question_embedding, emb)
+            semantic_score = cosine_similarity(question_embedding, emb)
+            
             if i < len(content_chunks):
-                top_chunks.append((similarity, content_chunks[i]))
+                chunk = content_chunks[i]
+                keyword_score = fuzz.partial_ratio(
+                    question.lower(),
+                    chunk.lower()
+                ) / 100
+
+                final_score = (0.7 * semantic_score) + (0.3 * keyword_score)
+                top_chunks.append((final_score, chunk))
 
     top_chunks.sort(reverse=True, key=lambda x: x[0])
 
