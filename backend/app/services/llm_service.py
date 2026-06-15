@@ -15,19 +15,24 @@ model = genai.GenerativeModel(
 
 def generate_answer(
     question,
-    context
+    context,
+    memory=""
 ):
 
     prompt = f"""
 You are an AI Research Assistant.
 
-Answer ONLY using the provided context.
+Your job:
+- Answer ONLY using provided context
+- Use previous conversation memory
+- Give structured answers
+- Be concise and professional
+- Never hallucinate
 
-If the answer is not found,
-say:
-"I could not find relevant information."
+Previous Conversation:
+{memory}
 
-Context:
+Document Context:
 {context}
 
 Question:
