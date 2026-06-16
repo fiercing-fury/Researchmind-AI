@@ -105,15 +105,27 @@ def upload_document(
 
     # Generate Embeddings
     combined_embeddings = []
+    chunk_metadata = []
 
-    for chunk in chunks:
+    for i, chunk in enumerate(
+        chunks
+    ):
 
-        embedding = generate_embedding(
-            chunk
+        embedding = (
+            generate_embedding(
+                chunk
+            )
         )
 
         combined_embeddings.append(
             embedding
+        )
+
+        chunk_metadata.append(
+            {
+                "chunk_id": i,
+                "content": chunk
+            }
         )
 
     # Save Document
@@ -125,6 +137,9 @@ def upload_document(
         content=extracted_text,
         embedding=json.dumps(
             combined_embeddings
+        ),
+        chunk_metadata=json.dumps(
+            chunk_metadata
         )
     )
 

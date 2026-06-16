@@ -85,6 +85,10 @@ class Document(Base):
         DateTime,
         default=datetime.utcnow
     )
+    chunk_metadata = Column(
+    Text,
+    nullable=True
+    )
     
 class ChatHistory(Base):
     __tablename__ = "chat_history"
