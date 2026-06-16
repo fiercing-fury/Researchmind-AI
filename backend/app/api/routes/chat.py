@@ -103,7 +103,23 @@ def chat(
                 ) / 100
 
                 final_score = (0.7 * semantic_score) + (0.3 * keyword_score)
-                top_chunks.append((final_score, chunk))
+                page_metadata = json.loads(doc.page_metadata)
+
+                page_number = 1
+
+                if i < len(page_metadata):
+                    page_number = (
+                        page_metadata[i]
+                        .get("page", 1)
+                    )
+
+                top_chunks.append(
+                    (
+                        final_score,
+                        chunk,
+                        page_number
+                    )
+                )
 
     top_chunks.sort(reverse=True, key=lambda x: x[0])
 
@@ -111,21 +127,16 @@ def chat(
     chunk_scores = []
     seen = set()
 
-    for score, chunk in top_chunks:
-
+    for score, chunk, page_num in top_chunks:
         if chunk not in seen:
-
-            unique_chunks.append(
-                chunk
-            )
-
+            unique_chunks.append(chunk)
             chunk_scores.append(
                 (
                     score,
-                    chunk
+                    chunk,
+                    page_num
                 )
             )
-
             seen.add(chunk)
 
         if len(unique_chunks) == 3:
@@ -133,6 +144,7 @@ def chat(
 
     final_answer = " ".join(unique_chunks)
     best_chunk = ""
+    best_page = 1
 
     question_words = (
         question.lower()
@@ -142,11 +154,8 @@ def chat(
 
     best_overlap = 0
 
-    for chunk in unique_chunks:
-
-        chunk_lower = (
-            chunk.lower()
-        )
+    for score, chunk, page_num in chunk_scores:
+        chunk_lower = chunk.lower()
 
         overlap = sum(
             1
@@ -156,9 +165,9 @@ def chat(
         )
 
         if overlap > best_overlap:
-
             best_overlap = overlap
             best_chunk = chunk
+            best_page = page_num
 
     source_reference = (
         best_chunk
@@ -167,35 +176,14 @@ def chat(
         .strip()
     )
 
-    source_reference = (
-        source_reference
-        .replace("\n", " ")
-        .replace("  ", " ")
-        .strip()
-    )
-
-    words = (
-        source_reference
-        .split()
-    )
+    words = source_reference.split()
 
     max_words = 50
 
-    source_reference = (
-        " ".join(
-            words[:max_words]
-        )
-    )
+    source_reference = " ".join(words[:max_words])
 
     if len(words) > max_words:
         source_reference += "..."
-
-        source_reference = (
-            " ".join(
-                words[:50]
-            )
-            + "..."
-        )
 
     if len(source_reference) > 300:
         source_reference = (
@@ -211,7 +199,7 @@ def chat(
 
     ai_response += (
         f"\n\nSource:\n"
-        f"{source_reference}"
+        f"{best_page}"
     )
 
     chat = ChatHistory(user_id=current_user.id, question=question, answer=ai_response)

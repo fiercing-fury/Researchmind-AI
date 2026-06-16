@@ -89,7 +89,10 @@ class Document(Base):
     Text,
     nullable=True
     )
-    
+    page_metadata = Column(
+    Text,
+    nullable=True
+    )
 class ChatHistory(Base):
     __tablename__ = "chat_history"
 

@@ -81,11 +81,27 @@ def upload_document(
 
         reader = PdfReader(file_path)
 
-        for page in reader.pages:
+        page_texts = []
+
+        for page_num, page in enumerate(
+            reader.pages,
+            start=1
+        ):
+
             text = page.extract_text()
 
             if text:
-                extracted_text += text + "\n"
+
+                extracted_text += (
+                    text + "\n"
+                )
+
+                page_texts.append(
+                    {
+                        "page": page_num,
+                        "text": text
+                    }
+                )
 
     # TXT Extraction
     elif file.content_type == "text/plain":
@@ -106,10 +122,9 @@ def upload_document(
     # Generate Embeddings
     combined_embeddings = []
     chunk_metadata = []
+    page_metadata = []
 
-    for i, chunk in enumerate(
-        chunks
-    ):
+    for i, chunk in enumerate(chunks):
 
         embedding = (
             generate_embedding(
@@ -121,10 +136,32 @@ def upload_document(
             embedding
         )
 
+        matched_page = 1
+
+        for page_info in page_texts:
+
+            if (
+                chunk[:100]
+                in page_info["text"]
+            ):
+
+                matched_page = (
+                    page_info["page"]
+                )
+
+                break
+
         chunk_metadata.append(
             {
                 "chunk_id": i,
                 "content": chunk
+            }
+        )
+
+        page_metadata.append(
+            {
+                "chunk_id": i,
+                "page": matched_page
             }
         )
 
@@ -140,6 +177,9 @@ def upload_document(
         ),
         chunk_metadata=json.dumps(
             chunk_metadata
+        ),
+        page_metadata=json.dumps(
+            page_metadata
         )
     )
 
