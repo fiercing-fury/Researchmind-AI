@@ -4,8 +4,11 @@ from fastapi import (
     HTTPException
 )
 from app.services.llm_service import (
-    generate_answer
+    generate_answer,
+    stream_answer   
 )
+import time
+from fastapi.responses import StreamingResponse
 from rapidfuzz import fuzz
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
@@ -142,8 +145,8 @@ def chat(
         if len(unique_chunks) == 3:
             break
 
-    final_answer = " ".join(unique_chunks)
-    best_chunk = ""
+        final_answer = " ".join(unique_chunks)
+
     best_page = 1
 
     question_words = (
@@ -155,55 +158,55 @@ def chat(
     best_overlap = 0
 
     for score, chunk, page_num in chunk_scores:
+
         chunk_lower = chunk.lower()
 
         overlap = sum(
             1
-            for word
-            in question_words
+            for word in question_words
             if word in chunk_lower
         )
 
         if overlap > best_overlap:
+
             best_overlap = overlap
-            best_chunk = chunk
             best_page = page_num
 
-    source_reference = (
-        best_chunk
-        .replace("\n", " ")
-        .replace("  ", " ")
-        .strip()
-    )
+    def generate_stream():
 
-    words = source_reference.split()
+        full_response = ""
 
-    max_words = 50
+        for chunk in stream_answer(
+            question,
+            final_answer,
+            conversation_memory
+        ):
 
-    source_reference = " ".join(words[:max_words])
+            full_response += chunk
 
-    if len(words) > max_words:
-        source_reference += "..."
+            time.sleep(0.2)
 
-    if len(source_reference) > 300:
-        source_reference = (
-            source_reference[:300]
-            + "..."
+            yield chunk
+
+        source_text = (
+            f"\n\nSource:\n"
+            f"Page {best_page}"
         )
 
-    ai_response = generate_answer(
-        question,
-        final_answer,
-        conversation_memory
+        full_response += source_text
+
+        yield source_text
+
+        chat = ChatHistory(
+            user_id=current_user.id,
+            question=question,
+            answer=full_response
+        )
+
+        db.add(chat)
+        db.commit()
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/plain"
     )
-
-    ai_response += (
-        f"\n\nSource:\n"
-        f"{best_page}"
-    )
-
-    chat = ChatHistory(user_id=current_user.id, question=question, answer=ai_response)
-    db.add(chat)
-    db.commit()
-
-    return {"question": question, "answer": ai_response}

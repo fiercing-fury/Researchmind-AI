@@ -46,3 +46,39 @@ Answer:
     )
 
     return response.text
+
+
+def stream_answer(
+    question,
+    context,
+    conversation_memory=""
+):
+
+    prompt = f"""
+    Previous Conversation:
+    {conversation_memory}
+
+    Context:
+    {context}
+
+    Question:
+    {question}
+
+    Answer using only provided context.
+    If information is unavailable,
+    say so clearly.
+    """
+
+    response = model.generate_content(
+        prompt,
+        stream=True
+    )
+
+    for chunk in response:
+
+        if hasattr(
+            chunk,
+            "text"
+        ) and chunk.text:
+
+            yield chunk.text
