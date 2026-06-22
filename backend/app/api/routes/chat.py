@@ -120,7 +120,8 @@ def chat(
                     (
                         final_score,
                         chunk,
-                        page_number
+                        page_number,
+                        doc.file_name
                     )
                 )
 
@@ -130,14 +131,15 @@ def chat(
     chunk_scores = []
     seen = set()
 
-    for score, chunk, page_num in top_chunks:
+    for score, chunk, page_num, file_name in top_chunks:
         if chunk not in seen:
             unique_chunks.append(chunk)
             chunk_scores.append(
                 (
                     score,
                     chunk,
-                    page_num
+                    page_num,
+                    file_name
                 )
             )
             seen.add(chunk)
@@ -148,6 +150,8 @@ def chat(
         final_answer = " ".join(unique_chunks)
 
     best_page = 1
+    best_file = "unknown document"
+
 
     question_words = (
         question.lower()
@@ -157,7 +161,7 @@ def chat(
 
     best_overlap = 0
 
-    for score, chunk, page_num in chunk_scores:
+    for score, chunk, page_num, file_name in chunk_scores:
 
         chunk_lower = chunk.lower()
 
@@ -171,7 +175,7 @@ def chat(
 
             best_overlap = overlap
             best_page = page_num
-
+            best_file = file_name
     def generate_stream():
 
         full_response = ""
@@ -190,6 +194,7 @@ def chat(
 
         source_text = (
             f"\n\nSource:\n"
+            f"{best_file}"
             f"Page {best_page}"
         )
 
@@ -210,3 +215,65 @@ def chat(
         generate_stream(),
         media_type="text/plain"
     )
+ 
+@router.post("/compare")
+def compare_documents(
+    current_user=Depends(
+        get_current_user
+    ),
+    db: Session = Depends(get_db)
+):
+
+    documents = (
+        db.query(Document)
+        .filter(
+            Document.user_id
+            == current_user.id
+        )
+        .all()
+    )
+
+    if len(documents) < 2:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Upload at least 2 documents"
+        )
+
+    comparison_context = ""
+
+    for doc in documents:
+
+        comparison_context += (
+            f"\nDocument: {doc.file_name}\n"
+        )
+
+        comparison_context += (
+            doc.content[:2000]
+        )
+
+        comparison_context += "\n\n"
+
+    prompt = f"""
+    Compare the following documents.
+
+    Highlight:
+
+    - Key differences
+    - Strengths
+    - Weaknesses
+    - Important insights
+
+    Documents:
+
+    {comparison_context}
+    """
+
+    result = generate_answer(
+        "Compare these documents",
+        comparison_context
+    )
+
+    return {
+        "comparison": result
+    }
