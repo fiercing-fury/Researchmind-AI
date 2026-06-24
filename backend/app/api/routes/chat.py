@@ -194,7 +194,6 @@ def chat(
 
             full_response += chunk
 
-            time.sleep(0.2)
 
             yield chunk
 
