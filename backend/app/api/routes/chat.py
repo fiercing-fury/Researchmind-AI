@@ -3,6 +3,7 @@ from fastapi import (
     Depends,
     HTTPException
 )
+from uuid import UUID
 from app.services.llm_service import (
     generate_answer,
     stream_answer   
@@ -59,16 +60,21 @@ def cosine_similarity(a, b):
 @router.post("/")
 def chat(
     question: str,
-    current_user=Depends(
-        get_current_user
-    ),
-    db: Session = Depends(get_db)
+    document_id: UUID,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
+    print(f"Document ID: {document_id}")
     documents = (
-        db.query(Document)
-        .filter(Document.user_id == current_user.id)
-        .all()
+    db.query(Document)
+    .filter(
+        Document.user_id ==
+        current_user.id,
+        Document.id ==
+        document_id
     )
+    .all()
+)
 
     if not documents:
         raise HTTPException(status_code=404, detail="No documents found")
@@ -144,7 +150,7 @@ def chat(
             )
             seen.add(chunk)
 
-        if len(unique_chunks) == 3:
+        if len(unique_chunks) == 8:
             break
 
         final_answer = " ".join(unique_chunks)
@@ -277,3 +283,30 @@ def compare_documents(
     return {
         "comparison": result
     }
+
+@router.get("/history")
+def get_chat_history(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    chats = (
+        db.query(ChatHistory)
+        .filter(
+            ChatHistory.user_id == current_user.id
+        )
+        .order_by(
+            ChatHistory.created_at.desc()
+        )
+        .limit(20)
+        .all()
+    )
+
+    return [
+        {
+            "id": str(chat.id),
+            "question": chat.question,
+            "created_at": chat.created_at
+        }
+        for chat in chats
+    ]

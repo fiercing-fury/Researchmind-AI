@@ -20,14 +20,16 @@ def generate_answer(
 ):
 
     prompt = f"""
-You are an AI Research Assistant.
+You are an AI Research Assistant. Use the following document context to answer the question.
 
-Your job:
-- Answer ONLY using provided context
-- Use previous conversation memory
-- Give structured answers
-- Be concise and professional
-- Never hallucinate
+Rules:
+1. Answer only from the provided document context.
+2. If the answer is not present, say:
+   "I could not find this information in the document."
+3. Use bullet points when appropriate.
+4. Prefer exact facts from the document.
+5. Do not invent information.
+6. Cite the relevant page if available.
 
 Previous Conversation:
 {memory}

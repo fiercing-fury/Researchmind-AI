@@ -185,9 +185,8 @@ def upload_document(
 
     db.add(document)
     db.commit()
-
+    db.refresh(document)
     return {
-        "message": "File uploaded successfully",
-        "file_name": file.filename,
-        "preview": extracted_text[:500]
-    }
+    "message": "File uploaded successfully",
+    "document_id": document.id
+}
