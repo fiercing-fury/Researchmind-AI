@@ -23,5 +23,5 @@ RapidFuzz==3.14.5
 pypdf==6.13.2
 aiofiles==23.2.1
 
-sentence-transformers==5.1.0
-transformers==4.53.0
+sentence-transformers==3.4.1
+transformers==4.48.3
