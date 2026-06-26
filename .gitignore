@@ -1,7 +1,11 @@
 venv/
+node_modules/
+frontend/node_modules/
+frontend/dist/
 __pycache__/
 .env
 backend/.env
+frontend/.env
 uploads/
 *.pyc
 test_gemini.py

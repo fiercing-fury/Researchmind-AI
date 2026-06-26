@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import API from "../services/api";
+import API, { API_BASE_URL } from "../services/api";
 import ReactMarkdown from "react-markdown";
 
 export default function Dashboard() {
@@ -165,7 +165,7 @@ export default function Dashboard() {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
-                `http://127.0.0.1:8000/chat/?question=${encodeURIComponent(
+                `${API_BASE_URL}/chat/?question=${encodeURIComponent(
                     userQuestion
                 )}&document_id=${documentId}`,
                 {
@@ -175,6 +175,10 @@ export default function Dashboard() {
                     },
                 }
             );
+
+            if (!response.ok || !response.body) {
+                throw new Error("Chat request failed");
+            }
 
             const reader =
                 response.body.getReader();
