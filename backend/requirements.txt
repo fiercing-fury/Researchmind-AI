@@ -7,9 +7,11 @@ psycopg2-binary==2.9.12
 
 python-dotenv==1.1.1
 python-multipart==0.0.20
+loguru==0.7.3
 
 pydantic==2.11.7
 pydantic-settings==2.11.0
+email-validator==2.2.0
 
 python-jose==3.5.0
 passlib[bcrypt]==1.7.4
