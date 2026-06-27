@@ -6,26 +6,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const login = async () => {
-    setIsLoading(true);
+  const formData = new FormData();
 
-    try {
-      const formData = new FormData();
+  formData.append("username", email); formData.append("password", password);
 
-      formData.append("username", email);
-      formData.append("password", password);
+  const response = await API.post("/auth/login", formData);
 
-      const response = await API.post("/auth/login", formData);
+  const params = new URLSearchParams(); params.append("username", email); params.append("password", password);
 
-      localStorage.setItem("token", response.data.access_token);
-      window.location.href = "/dashboard";
-    } catch (error) {
-      console.log("LOGIN ERROR:", error);
-      alert("Login Failed");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const response = await API.post("/auth/login", params.toString(), { headers: { "Content-Type": "application/x-www-form-urlencoded" } });
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#050711] text-white">
