@@ -1,12 +1,13 @@
 import { useState } from "react";
 import API from "../services/api";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  import { useNavigate } from "react-router-dom";  // add this import
+  // add this import
 
   // inside your component
   const navigate = useNavigate();
