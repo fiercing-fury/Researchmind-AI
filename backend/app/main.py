@@ -14,14 +14,19 @@ app = FastAPI(
     version=settings.APP_VERSION,
     debug=settings.DEBUG
 )
+import re
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+
+origins = [
+    "https://researchmind-ai-ogql.vercel.app",
+    "http://localhost:5173",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://researchmind-ai-ogql.vercel.app",  # your Vercel frontend
-        "http://localhost:5173",                      # for local dev
-    ],
+    allow_origin_regex=r"https://researchmind-ai-ogql.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
