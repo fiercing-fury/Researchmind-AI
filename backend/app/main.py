@@ -8,49 +8,37 @@ from app.api.routes import documents
 from app.api.routes.upload import router as upload_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.user import router as user_router
-from app.api.routes.chat import router as chat_router 
+from app.api.routes.chat import router as chat_router
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     debug=settings.DEBUG
 )
-import re
-from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-
-origins = [
-    "https://researchmind-ai-ogql.vercel.app",
-    "http://localhost:5173",
-]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r"https://researchmind-ai-ogql.*\.vercel\.app",
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-Base.metadata.create_all(bind=engine)
 
+Base.metadata.create_all(bind=engine)
 
 @app.on_event("startup")
 async def startup_event():
     logger.info("ResearchMind AI Backend Started")
 
-
 @app.get("/")
 def root():
-    return {
-        "message": "ResearchMind AI Running"
-    }
-
+    return {"message": "ResearchMind AI Running"}
 
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(upload_router)
 app.include_router(chat_router)
-app.include_router(
-    documents.router
-)
+app.include_router(documents.router)
