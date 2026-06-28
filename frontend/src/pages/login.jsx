@@ -1,6 +1,6 @@
 import { useState } from "react";
 import API from "../services/api";
-
+import { Link } from "react-router-dom";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -111,6 +111,12 @@ export default function Login() {
                   onClick={login}
                 >
                   {isLoading ? "Authenticating..." : "Enter workspace"}
+                  <p className="text-center text-sm text-slate-400">
+                    Don't have an account?{" "}
+                    <Link to="/signup" className="text-cyan-300 hover:underline">
+                      Sign up
+                    </Link>
+                  </p>
                 </button>
               </div>
             </div>
