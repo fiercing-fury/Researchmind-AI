@@ -1,39 +1,15 @@
 import { useState } from "react";
 import API from "../services/api";
-import { useNavigate } from "react-router-dom";  // add this import
-
-// inside your component
-const navigate = useNavigate();
-
-async function login() {
-  setIsLoading(true);
-  try {
-    const params = new URLSearchParams();
-    params.append("username", email);
-    params.append("password", password);
-
-    const response = await API.post(
-      "/auth/login",
-      params.toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-    );
-
-    // Save token and redirect
-    localStorage.setItem("token", response.data.access_token);
-    navigate("/dashboard");
-
-  } catch (err) {
-    console.error(err);
-    alert("Invalid email or password");  // show error to user
-  } finally {
-    setIsLoading(false);
-  }
-}
 import { Link } from "react-router-dom";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  import { useNavigate } from "react-router-dom";  // add this import
+
+  // inside your component
+  const navigate = useNavigate();
 
   async function login() {
     setIsLoading(true);
@@ -48,10 +24,13 @@ export default function Login() {
         { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
       );
 
-      // handle response as needed
-      console.log(response.data);
+      // Save token and redirect
+      localStorage.setItem("token", response.data.access_token);
+      navigate("/dashboard");
+
     } catch (err) {
       console.error(err);
+      alert("Invalid email or password");  // show error to user
     } finally {
       setIsLoading(false);
     }
